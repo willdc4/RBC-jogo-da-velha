@@ -47,17 +47,36 @@ void storeCase() {
     cout << "[Case Stored]\n";
 }
 
-bool gameOver(int step, string currentUser) {
+bool gameOver(int step, string currentUser, char tabuleiro[3][3]) {
     //linha completa
-    //coluna completa
-    //diagonal principal completa
-    //diagonal secundaria completa
-    //deu velha
-    if (step < 8) {
-        return false;
+    for (int i = 0; i < 3; i++){
+        if ((tabuleiro[i][0] == tabuleiro[i][1]) and (tabuleiro[i][1] == tabuleiro[i][2])) {
+            cout << "Winner is " << currentUser << endl;
+            return true;
+        }
     }
-    cout << "Winner is " << currentUser << endl;
-    return true;
+    //coluna completa
+    for (int i = 0; i < 3; i++){
+        if ((tabuleiro[0][i] == tabuleiro[1][i]) and (tabuleiro[1][i] == tabuleiro[2][i])) {
+            cout << "Winner is " << currentUser << endl;
+            return true;
+        }
+    }
+    //diagonal principal completa
+    if((tabuleiro[0][0] == tabuleiro[1][1]) and (tabuleiro[1][1] == tabuleiro[2][2])) {
+        cout << "Winner is " << currentUser << endl;
+        return true;
+    }
+    //diagonal secundaria completa
+    if((tabuleiro[3][0] == tabuleiro[2][2]) and (tabuleiro[2][2] == tabuleiro[1][3])) {
+        cout << "Winner is " << currentUser << endl;
+        return true;
+    }
+    //deu velha
+    if (step == 9) {
+        return true;
+    }
+    return false;
 }
 
 string changeUser(string currentPlayer, string mode) {
@@ -87,15 +106,15 @@ void gameLoop(string mode, jogada j1){
         currentPlayer = "U";
     }
     bool over = false;
-    while (over == false) {
+    while (!over) {
         if (currentPlayer == "C") {
-            char x, y;
+            int x, y;
             bool deu = false;
             while(!deu){
                 cin  >> x >> y;
-                if (tabuleiro[x][y] == ' '){
+                if (tabuleiro[x][y] == '2'){
                     deu = true;
-                    tabuleiro[x][y] = "C";
+                    tabuleiro[x][y] = 'C';
                 }
             }
             
@@ -104,7 +123,7 @@ void gameLoop(string mode, jogada j1){
             userPlay();
         }
         storeCase();
-        over = gameOver(step, currentPlayer);
+        over = gameOver(step, currentPlayer, tabuleiro);
         currentPlayer = changeUser(currentPlayer, mode);
         step=step+1;
     }
