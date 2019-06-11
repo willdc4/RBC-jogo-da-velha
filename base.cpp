@@ -7,6 +7,7 @@ struct jogada{
     int numVencedora;
     int numEmpates;
     int jog[9][2];
+    int numJogadas;
 };
 
 /*
@@ -33,8 +34,22 @@ void storeDataFile() {
     cout << "Storing Data\n";
 }
 
-void userPlay() {
-
+void userPlay(string currentPlayer,char tabuleiro[3][3], jogada j1) {
+    int x, y;
+    bool deu = false;
+    while(!deu){
+        cin  >> x >> y;
+        if (tabuleiro[x][y] == ' '){
+            deu = true;
+            if (currentPlayer == "U1"){
+                tabuleiro[x][y] = 'U';
+            }else{
+                tabuleiro[x][y] = 'K';
+            }
+        }
+    }
+    j1.jog[j1.numJogadas][0] = x;
+    j1.jog[j1.numJogadas][1] = y;
 }
 
 bool lookSolution() {
@@ -49,7 +64,7 @@ bool lookSolution() {
     return false;
 }
 
-void computerPlay(char tabuleiro[3][3], string currentPlayer) {
+void computerPlay(char tabuleiro[3][3], string currentPlayer, jogada j1) {
     int x, y;
     bool deu = false;
     while(!deu){
@@ -65,6 +80,8 @@ void computerPlay(char tabuleiro[3][3], string currentPlayer) {
                 tabuleiro[x][y] = 'K';
             }
         }
+        j1.jog[j1.numJogadas][0] = x;
+        j1.jog[j1.numJogadas][1] = y;
     }
 }
 void storeCase() {
@@ -138,23 +155,8 @@ void gameLoop(string mode, jogada j1){
     printTabuleiro(tabuleiro);
     while (!over) {
         if (currentPlayer == "U1" or currentPlayer == "U2") {
-            int x, y;
-            bool deu = false;
-            while(!deu){
-                cin  >> x >> y;
-                if (tabuleiro[x][y] == ' '){
-                    deu = true;
-                    if (currentPlayer == "U1"){
-                        tabuleiro[x][y] = 'U';
-                    }else{
-                        tabuleiro[x][y] = 'K';
-                    }
-                }
-            }
-            
-        }
-        else {
-            cout << "entrou \n" << endl;
+            userPlay(currentPlayer, tabuleiro, j1);
+        }else {
             computerPlay(tabuleiro, currentPlayer, j1);
         }
         storeCase();
@@ -177,6 +179,7 @@ int main(){
     while (mode != "END") {
         if (mode == "CC" or mode == "UC" or mode == "UU") {
             jogada j1;
+            j1.numJogadas = 0;
             for (int i = 0; i < 9; i++)
             {
                 j1.jog[i][0] = 0;
