@@ -1,5 +1,5 @@
 #include <iostream>
-
+#include <time.h>
 #include <cstdlib>
 using namespace std;
 
@@ -15,6 +15,16 @@ O vetor deve conter uma estrutura denominada Jogada que deve conter as jogadas e
 A estrura básica do código deverá ser alterada para possibilitar que seja selecionado um número de jogadas máxima para o modo CC
 */
 
+
+
+void printTabuleiro(char tabuleiro[3][3]){
+    cout << "\n  " <<  tabuleiro[0][0] << " | " << tabuleiro[0][1] << " | " << tabuleiro[0][2] << endl << " ––––––––––" << endl << "  " 
+    << tabuleiro[1][0] << " | " << tabuleiro[1][1] << " | " << tabuleiro[1][2] << endl << " ––––––––––" << endl 
+    <<"  "<< tabuleiro[2][0] << " | " << tabuleiro[2][1] << " | " << tabuleiro[2][2] << endl;
+
+}
+
+
 void loadDataFile() {
     cout << "Loading Data\n";
 }
@@ -24,7 +34,7 @@ void storeDataFile() {
 }
 
 void userPlay() {
-    cout << "[User play]\n";
+
 }
 
 bool lookSolution() {
@@ -39,94 +49,123 @@ bool lookSolution() {
     return false;
 }
 
-void computerPlay() {
-    lookSolution();
-    cout << "[Computer play]\n";
+void computerPlay(char tabuleiro[3][3], string currentPlayer) {
+    int x, y;
+    bool deu = false;
+    while(!deu){
+        srand(time(0)*rand());
+        x = rand()%3;
+        srand(time(0)*rand());
+        y = rand()%3;
+        if (tabuleiro[x][y] == ' '){
+            deu = true;
+            if (currentPlayer == "C1"){
+                tabuleiro[x][y] = 'C';
+            }else{
+                tabuleiro[x][y] = 'K';
+            }
+        }
+    }
 }
 void storeCase() {
     cout << "[Case Stored]\n";
 }
 
 bool gameOver(int step, string currentUser, char tabuleiro[3][3]) {
-    //linha completa
+    //linha completa e coluna completa
     for (int i = 0; i < 3; i++){
-        if ((tabuleiro[i][0] == tabuleiro[i][1]) and (tabuleiro[i][1] == tabuleiro[i][2])) {
+        if ((tabuleiro[i][0] == tabuleiro[i][1]) and (tabuleiro[i][1] == tabuleiro[i][2]) and tabuleiro[i][2] != ' ') {
+            cout << "Winner is " << currentUser << endl;
+            return true;
+        }
+        if ((tabuleiro[0][i] == tabuleiro[1][i]) and (tabuleiro[1][i] == tabuleiro[2][i]) and tabuleiro[2][i] != ' ') {
             cout << "Winner is " << currentUser << endl;
             return true;
         }
     }
-    //coluna completa
-    for (int i = 0; i < 3; i++){
-        if ((tabuleiro[0][i] == tabuleiro[1][i]) and (tabuleiro[1][i] == tabuleiro[2][i])) {
-            cout << "Winner is " << currentUser << endl;
-            return true;
-        }
-    }
+
     //diagonal principal completa
-    if((tabuleiro[0][0] == tabuleiro[1][1]) and (tabuleiro[1][1] == tabuleiro[2][2])) {
+    if((tabuleiro[0][0] == tabuleiro[1][1]) and (tabuleiro[1][1] == tabuleiro[2][2]) and tabuleiro[2][2] != ' ') {
         cout << "Winner is " << currentUser << endl;
         return true;
     }
     //diagonal secundaria completa
-    if((tabuleiro[3][0] == tabuleiro[2][2]) and (tabuleiro[2][2] == tabuleiro[1][3])) {
+    if((tabuleiro[2][0] == tabuleiro[1][1]) and (tabuleiro[1][1] == tabuleiro[0][2]) and tabuleiro[2][2] != ' ') {
         cout << "Winner is " << currentUser << endl;
         return true;
     }
     //deu velha
-    if (step == 9) {
+    if (step >= 9) {
         return true;
     }
     return false;
 }
 
 string changeUser(string currentPlayer, string mode) {
-    if (mode == "CC") {
-        return "C";
+    if (mode == "CC" and currentPlayer == "C1") {
+        return "C2";
+    }else if(mode == "CC" and currentPlayer == "C2"){
+        return "C1";
     }
     
-    if (mode == "UU") {
-        return "U";
+    if (mode == "UU" and currentPlayer == "U2") {
+        return "U1";
+    }else if(mode == "UU" and currentPlayer == "U1"){
+        return "U2";
     }
     
-    if (mode == "UC" and currentPlayer == "C") {
-        return "U";
+    if (mode == "UC" and currentPlayer == "C1") {
+        return "U1";
+    }else if (mode == "UC" and currentPlayer == "U1"){
+        return "C1";
     }
-    return "C";
+    return "C1";
 }
 
 void gameLoop(string mode, jogada j1){
     char tabuleiro[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
     int step = 0;
-    string currentPlayer = "C";
+    string currentPlayer = "C1";
     if (mode == "UC"){
         cout << "Who starts (U/C):\n";
         cin >> currentPlayer;
     }
-    else if (mode == "UU"){
+    if (mode == "UU"){
         currentPlayer = "U";
     }
+    currentPlayer+="1";
     bool over = false;
+    printTabuleiro(tabuleiro);
     while (!over) {
-        if (currentPlayer == "C") {
+        if (currentPlayer == "U1" or currentPlayer == "U2") {
             int x, y;
             bool deu = false;
             while(!deu){
                 cin  >> x >> y;
-                if (tabuleiro[x][y] == '2'){
+                if (tabuleiro[x][y] == ' '){
                     deu = true;
-                    tabuleiro[x][y] = 'C';
+                    if (currentPlayer == "U1"){
+                        tabuleiro[x][y] = 'U';
+                    }else{
+                        tabuleiro[x][y] = 'K';
+                    }
                 }
             }
             
         }
         else {
-            userPlay();
+            cout << "entrou \n" << endl;
+            computerPlay(tabuleiro, currentPlayer, j1);
         }
         storeCase();
+        step=step+1;
+        printTabuleiro(tabuleiro);
         over = gameOver(step, currentPlayer, tabuleiro);
         currentPlayer = changeUser(currentPlayer, mode);
-        step=step+1;
+        
     }
+    
+    
     cout << "Game is Over\n";
 }
 
