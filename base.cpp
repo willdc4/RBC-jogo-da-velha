@@ -2,46 +2,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-#include <time.h>
+#include <time.h>0
 #include <cstdlib>
 
 using namespace std;
-
-class Jogada{
-    public:
-	int numVencedora;
-	int numEmpates;
-	int jog[9][2];
-	int numJogadas;
-	
-	int getVencedora(){
-		return numVencedora;
-	}
-	void setVencedora(int v){
-		numVencedora = v;
-	}
-	
-	int getEmpates(){
-		return numVencedora;
-	}
-	void setEmpates(int e){
-		numVencedora = e;
-	}
-	void incrementaNumVencedora(){
-		numVencedora++;
-	}
-	void incrementaNumEmpates(){
-		numEmpates++;
-	}
-};
-
-fstream fgrava;
-/*
-A estrutura de dados deve ser obrigatoriamente um vetor alocado dinamicamente iniciado com o tamanho 10 e expandido de 10 em 10 elementos
-O vetor deve conter uma estrutura denominada Jogada que deve conter as jogadas e o número de vezes que ela foi vencedora, sugiro usar um vetor para armazenar as jogadas
-A estrura básica do código deverá ser alterada para possibilitar que seja selecionado um número de jogadas máxima para o modo CC
-*/
-
 
 
 void printTabuleiro(char tabuleiro[3][3]){
@@ -51,24 +15,83 @@ void printTabuleiro(char tabuleiro[3][3]){
 
 }
 
+class Jogada{
+    public:
+    int numVencedora;
+    int numEmpates;
+    int jog[9][2];
+    int numJogadas;
+    char tabuleiro[3][3];
+    
+    void printJ(){
+        for (int i = 0; i < numJogadas; i++){
+            cout << jog[i][0]  << " : " << jog[i][1] << endl;
+            tabuleiro[jog[i][0]][jog[i][1]] = 'X';
+        }
+        printTabuleiro(tabuleiro);
+        
+    }
+    
+    int getVencedora(){
+        return numVencedora;
+    }
+    void setVencedora(int v){
+        numVencedora = v;
+    }
+    
+    int getEmpates(){
+        return numVencedora;
+    }
+    void setEmpates(int e){
+        numVencedora = e;
+    }
+    void incrementaNumVencedora(){
+        numVencedora++;
+    }
+    void incrementaNumEmpates(){
+        numEmpates++;
+    }
+};
+
+Jogada j1;
+fstream fgrava;
+/*
+A estrutura de dados deve ser obrigatoriamente um vetor alocado dinamicamente iniciado com o tamanho 10 e expandido de 10 em 10 elementos
+O vetor deve conter uma estrutura denominada Jogada que deve conter as jogadas e o número de vezes que ela foi vencedora, sugiro usar um vetor para armazenar as jogadas
+A estrura básica do código deverá ser alterada para possibilitar que seja selecionado um número de jogadas máxima para o modo CC
+*/
+
+
+
+
 
 void loadDataFile() {
-    cout << "Loading Data\n";
+    fgrava.seekg(0);
+    for 
+    fgrava.read((char*)&j1, sizeof(Jogada)); 
+    j1.printJ();
 }
 
-void storeDataFile(Jogada j1){
-	//if (jogada existe), entao apenas incrementa o numero de vitorias ou empates.
-	//else{  grava a nova jogada no arquivo com o numero de vitorias ou empates a ser visto no resultado
-		fgrava.write((char *) &j1, sizeof(Jogada));
-	}
+void storeDataFile(){
+    //if (jogada existe), entao apenas incrementa o numero de vitorias ou empates.
+    //else{  grava a nova jogada no arquivo com o numero de vitorias ou empates a ser visto no resultado
+        fgrava.write((char*) &j1, sizeof(Jogada));
 }
 
-void userPlay(string currentPlayer,char tabuleiro[3][3], Jogada j1) {
+void storeCase(int x, int y) {
+    j1.jog[j1.numJogadas][0] = x;
+    j1.jog[j1.numJogadas][1] = y;
+}
+
+void userPlay(string currentPlayer,char tabuleiro[3][3]) {
     int x, y;
     bool deu = false;
     while(!deu){
         cin  >> x >> y;
         if (tabuleiro[x][y] == ' '){
+            j1.jog[j1.numJogadas][0] = x;
+            j1.jog[j1.numJogadas][1] = y;
+            
             deu = true;
             if (currentPlayer == "U1"){
                 tabuleiro[x][y] = 'U';
@@ -77,7 +100,7 @@ void userPlay(string currentPlayer,char tabuleiro[3][3], Jogada j1) {
             }
         }
     }
-    storeCase(j1, x, y);
+    storeCase(x, y);
 }
 
 bool lookSolution() {
@@ -92,8 +115,8 @@ bool lookSolution() {
     return false;
 }
 
-void computerPlay(char tabuleiro[3][3], string currentPlayer, Jogada j1) {
-	lookSolution();
+void computerPlay(char tabuleiro[3][3], string currentPlayer) {
+    lookSolution();
     int x, y;
     bool deu = false;
     while(!deu){
@@ -103,20 +126,18 @@ void computerPlay(char tabuleiro[3][3], string currentPlayer, Jogada j1) {
         y = rand()%3;
         if (tabuleiro[x][y] == ' '){
             deu = true;
+            j1.jog[j1.numJogadas][0] = x;
+            j1.jog[j1.numJogadas][1] = y;
             if (currentPlayer == "C1"){
                 tabuleiro[x][y] = 'C';
             }else{
                 tabuleiro[x][y] = 'K';
             }
         }
-        storeCase(j1, x, y);
+        
     }
 }
-void storeCase(Jogada j1, int x, int y) {
-	j1.jog[j1.numJogadas][0] = x;
-    j1.jog[j1.numJogadas][1] = y;
-    j1.numJogadas++;
-}
+
 
 bool gameOver(int step, string currentUser, char tabuleiro[3][3]) {
     //linha completa e coluna completa
@@ -169,7 +190,7 @@ string changeUser(string currentPlayer, string mode) {
     return "C1";
 }
 
-void gameLoop(string mode, Jogada j1){
+void gameLoop(string mode){
     char tabuleiro[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
     int step = 0;
     string currentPlayer = "C1";
@@ -185,29 +206,30 @@ void gameLoop(string mode, Jogada j1){
     printTabuleiro(tabuleiro);
     while (!over) {
         if (currentPlayer == "U1" or currentPlayer == "U2") {
-            userPlay(currentPlayer, tabuleiro, j1);
+            userPlay(currentPlayer, tabuleiro);
         }else {
-            computerPlay(tabuleiro, currentPlayer, j1);
+            computerPlay(tabuleiro, currentPlayer);
         }
         step=step+1;
         printTabuleiro(tabuleiro);
         over = gameOver(step, currentPlayer, tabuleiro);
         currentPlayer = changeUser(currentPlayer, mode);
+        j1.numJogadas++;
     }
-    storeDataFile(j1);
+    storeDataFile();
+    cout << j1.numJogadas << endl;
     
     
     cout << "Game is Over\n";
 }
 
 int main(){
-	fgrava.open("jogadas.txt", ios::app);
-    loadDataFile();
+    fgrava.open("jogadas.bin", ios::app | ios::binary | ios::in | ios::out);
     string mode;
     cin >> mode;
     while (mode != "END") {
         if (mode == "CC" or mode == "UC" or mode == "UU") {
-            Jogada j1;
+            
             j1.numJogadas = 0;
             for (int i = 0; i < 9; i++)
             {
@@ -215,12 +237,13 @@ int main(){
                 j1.jog[i][1] = -1;
             }
             
-            gameLoop(mode, j1);
+            gameLoop(mode);
         }
         else {
             cout << "Incorrect Mode\n";
         }
         cin >> mode;
     }
+    loadDataFile();
     return 0;
 }
