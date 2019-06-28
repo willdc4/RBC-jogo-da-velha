@@ -2,59 +2,75 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
-#include <time.h>0
+#include <time.h>
 #include <cstdlib>
 
 using namespace std;
 
 
-void printTabuleiro(char tabuleiro[3][3]){
-    cout << "\n  " <<  tabuleiro[0][0] << " | " << tabuleiro[0][1] << " | " << tabuleiro[0][2] << endl << "  ----------" << endl << "  " 
-    << tabuleiro[1][0] << " | " << tabuleiro[1][1] << " | " << tabuleiro[1][2] << endl << "  ----------" << endl 
+// Tabuleiro para representação do jog da velha
+ static char tabuleiro[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
+
+// Imprime o tabuleiro
+void printTabuleiro(){
+    cout << "\n  " <<  tabuleiro[0][0] << " | " << tabuleiro[0][1] << " | " << tabuleiro[0][2] << endl << "  ----------\n"
+    << "  " << tabuleiro[1][0] << " | " << tabuleiro[1][1] << " | " << tabuleiro[1][2] << endl << "  ----------\n"
     <<"  "<< tabuleiro[2][0] << " | " << tabuleiro[2][1] << " | " << tabuleiro[2][2] << endl;
 
 }
 
 class Jogada{
     public:
-    int numVencedora;
+    int numVitorias;
     int numEmpates;
     int jog[9][2];
     int numJogadas;
-    char tabuleiro[3][3];
     
-    void printJ(){
+    Jogada() {
+        numVitorias = 0;
+        numEmpates = 0;
+        for (int i = 0; i < 9; i++) {
+            jog[i][0] = -1;
+            jog[i][1] = -1;
+        } 
+        numJogadas = 0;
+        
+    }
+
+    int getVitorias(){
+        return numVitorias;
+    }
+
+    int getEmpates(){
+        return numVitorias;
+    }
+
+    void setVitorias(int v){
+        numVitorias = v;
+    }
+
+    void setEmpates(int e){
+        numVitorias = e;
+    }
+
+    void incrementaNumVitorias(){
+        numVitorias++;
+    }
+
+    void incrementaNumEmpates(){
+        numEmpates++;
+    }
+
+    void printJogada(){
         for (int i = 0; i < numJogadas; i++){
             cout << jog[i][0]  << " : " << jog[i][1] << endl;
             tabuleiro[jog[i][0]][jog[i][1]] = 'X';
         }
-        printTabuleiro(tabuleiro);
-        
-    }
-    
-    int getVencedora(){
-        return numVencedora;
-    }
-    void setVencedora(int v){
-        numVencedora = v;
-    }
-    
-    int getEmpates(){
-        return numVencedora;
-    }
-    void setEmpates(int e){
-        numVencedora = e;
-    }
-    void incrementaNumVencedora(){
-        numVencedora++;
-    }
-    void incrementaNumEmpates(){
-        numEmpates++;
+        printTabuleiro();
     }
 };
 
-Jogada j1;
-fstream fgrava;
+
 /*
 A estrutura de dados deve ser obrigatoriamente um vetor alocado dinamicamente iniciado com o tamanho 10 e expandido de 10 em 10 elementos
 O vetor deve conter uma estrutura denominada Jogada que deve conter as jogadas e o número de vezes que ela foi vencedora, sugiro usar um vetor para armazenar as jogadas
@@ -65,32 +81,32 @@ A estrura básica do código deverá ser alterada para possibilitar que seja sel
 
 
 
-void loadDataFile() {
-    fgrava.seekg(0);
-    for 
-    fgrava.read((char*)&j1, sizeof(Jogada)); 
-    j1.printJ();
+void loadDataFile(fstream *arquivo, Jogada jog) {
+    arquivo->seekg(0);
+    arquivo->read((char*)&jog, sizeof(Jogada)); 
+    jog.printJogada();
 }
 
-void storeDataFile(){
+void storeDataFile(fstream *arquivo, Jogada jog){
     //if (jogada existe), entao apenas incrementa o numero de vitorias ou empates.
     //else{  grava a nova jogada no arquivo com o numero de vitorias ou empates a ser visto no resultado
-        fgrava.write((char*) &j1, sizeof(Jogada));
+    arquivo->write((char*) &jog, sizeof(Jogada));
 }
 
-void storeCase(int x, int y) {
-    j1.jog[j1.numJogadas][0] = x;
-    j1.jog[j1.numJogadas][1] = y;
+void storeCase(int x, int y, Jogada jog) {
+    jog.jog[jog.numJogadas][0] = x;
+    jog.jog[jog.numJogadas][1] = y;
 }
 
-void userPlay(string currentPlayer,char tabuleiro[3][3]) {
+void userPlay(string currentPlayer, Jogada jog) {
     int x, y;
     bool deu = false;
     while(!deu){
+        cout << "\nPosição(x/y): ";
         cin  >> x >> y;
         if (tabuleiro[x][y] == ' '){
-            j1.jog[j1.numJogadas][0] = x;
-            j1.jog[j1.numJogadas][1] = y;
+            jog.jog[jog.numJogadas][0] = x;
+            jog.jog[jog.numJogadas][1] = y;
             
             deu = true;
             if (currentPlayer == "U1"){
@@ -100,7 +116,7 @@ void userPlay(string currentPlayer,char tabuleiro[3][3]) {
             }
         }
     }
-    storeCase(x, y);
+    storeCase(x, y, jog);
 }
 
 bool lookSolution() {
@@ -115,8 +131,8 @@ bool lookSolution() {
     return false;
 }
 
-void computerPlay(char tabuleiro[3][3], string currentPlayer) {
-    lookSolution();
+void computerPlay(string currentPlayer, Jogada jog) {
+    //lookSolution();
     int x, y;
     bool deu = false;
     while(!deu){
@@ -126,8 +142,8 @@ void computerPlay(char tabuleiro[3][3], string currentPlayer) {
         y = rand()%3;
         if (tabuleiro[x][y] == ' '){
             deu = true;
-            j1.jog[j1.numJogadas][0] = x;
-            j1.jog[j1.numJogadas][1] = y;
+            jog.jog[jog.numJogadas][0] = x;
+            jog.jog[jog.numJogadas][1] = y;
             if (currentPlayer == "C1"){
                 tabuleiro[x][y] = 'C';
             }else{
@@ -139,7 +155,7 @@ void computerPlay(char tabuleiro[3][3], string currentPlayer) {
 }
 
 
-bool gameOver(int step, string currentUser, char tabuleiro[3][3]) {
+bool gameOver(int step, string currentUser) {
     //linha completa e coluna completa
     for (int i = 0; i < 3; i++){
         if ((tabuleiro[i][0] == tabuleiro[i][1]) and (tabuleiro[i][1] == tabuleiro[i][2]) and tabuleiro[i][2] != ' ') {
@@ -190,8 +206,7 @@ string changeUser(string currentPlayer, string mode) {
     return "C1";
 }
 
-void gameLoop(string mode){
-    char tabuleiro[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
+void gameLoop(string mode, fstream *arquivo, Jogada jog){
     int step = 0;
     string currentPlayer = "C1";
     if (mode == "UC"){
@@ -203,47 +218,44 @@ void gameLoop(string mode){
     }
     currentPlayer+="1";
     bool over = false;
-    printTabuleiro(tabuleiro);
+    printTabuleiro();
     while (!over) {
         if (currentPlayer == "U1" or currentPlayer == "U2") {
-            userPlay(currentPlayer, tabuleiro);
+            userPlay(currentPlayer,jog);
         }else {
-            computerPlay(tabuleiro, currentPlayer);
+            computerPlay(currentPlayer, jog);
         }
         step=step+1;
-        printTabuleiro(tabuleiro);
-        over = gameOver(step, currentPlayer, tabuleiro);
+        printTabuleiro();
+        over = gameOver(step, currentPlayer);
         currentPlayer = changeUser(currentPlayer, mode);
-        j1.numJogadas++;
+        jog.numJogadas++;
     }
-    storeDataFile();
-    cout << j1.numJogadas << endl;
+    storeDataFile(arquivo, jog);
+    cout << jog.numJogadas << endl;
     
     
     cout << "Game is Over\n";
 }
 
 int main(){
-    fgrava.open("jogadas.bin", ios::app | ios::binary | ios::in | ios::out);
+    fstream arquivo;
+    arquivo.open("jogadas.bin", ios::app | ios::binary | ios::in | ios::out);
     string mode;
     cin >> mode;
+   // Jogada *jogAux = new Jogada;
     while (mode != "END") {
         if (mode == "CC" or mode == "UC" or mode == "UU") {
             
-            j1.numJogadas = 0;
-            for (int i = 0; i < 9; i++)
-            {
-                j1.jog[i][0] = -1;
-                j1.jog[i][1] = -1;
-            }
-            
-            gameLoop(mode);
+            Jogada jog;            
+            gameLoop(mode, &arquivo, jog);
         }
         else {
             cout << "Incorrect Mode\n";
         }
         cin >> mode;
     }
-    loadDataFile();
+    //loadDataFile(&arquivo,jog);
+    
     return 0;
 }
