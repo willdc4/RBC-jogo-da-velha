@@ -13,6 +13,7 @@
 *.out
 *.obj
 *.bin
+*.out
 
 # Precompiled Headers
 *.gch

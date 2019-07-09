@@ -8,13 +8,13 @@ using namespace std;
 
 
 // Tabuleiro para representação do jog da velha
-static char tabuleiro[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
+static char tabuleiro1[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
 
 // Imprime o tabuleiro
-void printTabuleiro(){
-    cout << "\n  " <<  tabuleiro[0][0] << " | " << tabuleiro[0][1] << " | " << tabuleiro[0][2] << endl << "  ----------\n"
-    << "  " << tabuleiro[1][0] << " | " << tabuleiro[1][1] << " | " << tabuleiro[1][2] << endl << "  ----------\n"
-    <<"  "<< tabuleiro[2][0] << " | " << tabuleiro[2][1] << " | " << tabuleiro[2][2] << endl;
+void printTabuleiro(char tabuleiroP[3][3]){
+    cout << "\n  " <<  tabuleiroP[0][0] << " | " << tabuleiroP[0][1] << " | " << tabuleiroP[0][2] << endl << "  ----------\n"
+    << "  " << tabuleiroP[1][0] << " | " << tabuleiroP[1][1] << " | " << tabuleiroP[1][2] << endl << "  ----------\n"
+    <<"  "<< tabuleiroP[2][0] << " | " << tabuleiroP[2][1] << " | " << tabuleiroP[2][2] << endl;
 
 }
 
@@ -63,11 +63,12 @@ class Jogada{
     }
 
     void printJogada(){
+        char tabuleiroPrint[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
         for (int i = 0; i < numJogadas; i++){
             cout << jog[i][0]  << " : " << jog[i][1] << endl;
-            tabuleiro[jog[i][0]][jog[i][1]] = 'X';
+            tabuleiroPrint[jog[i][0]][jog[i][1]] = 'X';
         }
-        printTabuleiro();
+        printTabuleiro(tabuleiroPrint);
     }
 };
 
@@ -75,15 +76,16 @@ class Jogada{
 
 class lista {
     private:
-        Jogada* primeiro;
+        
         Jogada* ultimo;
-        int tamanho;
+        
     public:
+        int tamanho;
+        Jogada* primeiro;
         lista();
         ~lista();
         void insere(Jogada dado);
         void insere(Jogada dado, int pos);
-        void remove(int posicao);
         int procura(Jogada valor);
         void imprime();
         inline bool vazia();
@@ -125,13 +127,11 @@ void lista::insere(Jogada JInsere) {
     {
         novo -> proximo = NULL;
         
-        if(primeiro == NULL)
-        {
+        if(primeiro == NULL){
            primeiro = novo;
            ultimo = novo;
        }
-       else
-       {
+       else{
            ultimo -> proximo = novo;
            ultimo = novo;
        }
@@ -144,20 +144,15 @@ void lista::insere(Jogada JInsere, int posicao) {
     
     Jogada* novo = new Jogada(JInsere);
     
-    if(novo)
-    {
-        if(posicao > tamanho or posicao < 0)
-        {
+    if(novo){
+        if(posicao > tamanho or posicao < 0){
             cerr << "Posicao muito grande desgraça" << endl;
         }
-        else
-        {
-            if(primeiro == NULL)
-            {
+        else{
+            if(primeiro == NULL){
                 insere(JInsere);
             }
-            else
-            {
+            else{
                 Jogada* ant = NULL;
                 Jogada* atual = primeiro;
                 
@@ -218,24 +213,6 @@ O vetor deve conter uma estrutura denominada Jogada que deve conter as jogadas e
 A estrura básica do código deverá ser alterada para possibilitar que seja selecionado um número de jogadas máxima para o modo CC
 */
 
-
-
-
-
-void loadDataFile(fstream *arquivo) {
-	Jogada jog;
-    arquivo->seekg(0);
-    arquivo->read((char*)&jog, sizeof(Jogada));
-    cout << "ola" << endl; 
-    jog.printJogada();
-}
-
-void storeDataFile(fstream *arquivo, Jogada jog){
-    //if (jogada existe), entao apenas incrementa o numero de vitorias ou empates.
-    //else{  grava a nova jogada no arquivo com o numero de vitorias ou empates a ser visto no resultado
-    arquivo->write((char*) &jog, sizeof(Jogada));
-}
-
 void storeCase(int x, int y, Jogada jog) {
     jog.jog[jog.numJogadas][0] = x;
     jog.jog[jog.numJogadas][1] = y;
@@ -247,15 +224,15 @@ void userPlay(string currentPlayer, Jogada jog) {
     while(!deu){
         cout << "\nPosição(x/y): ";
         cin  >> x >> y;
-        if (tabuleiro[x][y] == ' '){
+        if (tabuleiro1[x][y] == ' '){
             jog.jog[jog.numJogadas][0] = x;
             jog.jog[jog.numJogadas][1] = y;
             
             deu = true;
             if (currentPlayer == "U1"){
-                tabuleiro[x][y] = 'U';
+                tabuleiro1[x][y] = 'U';
             }else{
-                tabuleiro[x][y] = 'K';
+                tabuleiro1[x][y] = 'K';
             }
         }
     }
@@ -274,7 +251,7 @@ bool lookSolution() {
     return false;
 }
 
-void computerPlay(string currentPlayer, Jogada jog) {
+void computerPlay(string currentPlayer, Jogada *jog, lista *listaJogada, char tabuleiro[3][3]) {
     //lookSolution();
     int x, y;
     bool deu = false;
@@ -285,8 +262,8 @@ void computerPlay(string currentPlayer, Jogada jog) {
         y = rand()%3;
         if (tabuleiro[x][y] == ' '){
             deu = true;
-            jog.jog[jog.numJogadas][0] = x;
-            jog.jog[jog.numJogadas][1] = y;
+            jog->jog[jog->numJogadas][0] = x;
+            jog->jog[jog->numJogadas][1] = y;
             if (currentPlayer == "C1"){
                 tabuleiro[x][y] = 'C';
             }else{
@@ -298,7 +275,7 @@ void computerPlay(string currentPlayer, Jogada jog) {
 }
 
 
-bool gameOver(int step, string currentUser) {
+bool gameOver(int step, string currentUser, char tabuleiro[3][3]) {
     //linha completa e coluna completa
     for (int i = 0; i < 3; i++){
         if ((tabuleiro[i][0] == tabuleiro[i][1]) and (tabuleiro[i][1] == tabuleiro[i][2]) and tabuleiro[i][2] != ' ') {
@@ -349,7 +326,10 @@ string changeUser(string currentPlayer, string mode) {
     return "C1";
 }
 
-void gameLoop(string mode, fstream *arquivo, Jogada jog){
+void gameLoop(string mode, fstream *arquivo, lista *listaJogada){
+    Jogada jog;
+    char tabuleiro[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
+    jog.printJogada();
     int step = 0;
     string currentPlayer = "C1";
     if (mode == "UC"){
@@ -361,58 +341,60 @@ void gameLoop(string mode, fstream *arquivo, Jogada jog){
     }
     currentPlayer+="1";
     bool over = false;
-    printTabuleiro();
     while (!over) {
+        cout << "Passou \n";
         if (currentPlayer == "U1" or currentPlayer == "U2") {
             userPlay(currentPlayer,jog);
         }else {
-            computerPlay(currentPlayer, jog);
+            computerPlay(currentPlayer, &jog, listaJogada, tabuleiro);
         }
         step=step+1;
-        printTabuleiro();
-        over = gameOver(step, currentPlayer);
+        printTabuleiro(tabuleiro);
+        over = gameOver(step, currentPlayer, tabuleiro);
         currentPlayer = changeUser(currentPlayer, mode);
         jog.numJogadas++;
     }
-    storeDataFile(arquivo, jog);
     cout << jog.numJogadas << endl;
     
+    cout <<"num: "<<listaJogada->tamanho*sizeof(Jogada) << endl;
+    arquivo->write((char*) &jog, sizeof(jog));
+    listaJogada->insere(jog);
+    listaJogada->imprime();
     
     cout << "Game is Over\n";
 }
 
 int main(){
-	ifstream arTeste;
-	arTeste.open("jogadas.bin");
 	fstream arquivo;
 	lista *listaJogadas;
-	if (arTeste.is_open())
-	{
-		arTeste.close();
-		arquivo.open("jogadas.bin", ios::app | ios::binary | ios::in | ios::out);
-		arquivo.read((char*)&listaJogadas, sizeof(lista));
-	}else{
-		arTeste.close();
-		arquivo.open("jogadas.bin", ios::app | ios::binary | ios::in | ios::out);
-		listaJogadas = new lista();
-		arquivo.write((char*) &listaJogadas, sizeof(lista));
-		
-	}
+    listaJogadas = new lista();
+    arquivo.open("jogadas.bin", ios::app | ios::binary | ios::in | ios::out);
+    
+    Jogada aux;
+    arquivo.seekg(0);
+    arquivo.read((char*) &aux, sizeof(Jogada));
+    while(!arquivo.eof()) {
+        listaJogadas->insere(aux);
+        arquivo.read((char*) &aux, sizeof(Jogada));
+    }
+    arquivo.clear();
+    arquivo.seekg(0);
+    arquivo.seekp(0);
+    listaJogadas->imprime();
     string mode;
     cin >> mode;
    // Jogada *jogAux = new Jogada;
     while (mode != "END") {
         if (mode == "CC" or mode == "UC" or mode == "UU") {
-            
-            Jogada jog;            
-            gameLoop(mode, &arquivo, jog);
+            gameLoop(mode, &arquivo, listaJogadas);
+
+            // ver se jogada está na lista
         }
         else {
             cout << "Incorrect Mode\n";
         }
         cin >> mode;
     }
-    loadDataFile(&arquivo);
     
     return 0;
 }
