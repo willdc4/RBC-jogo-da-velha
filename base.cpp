@@ -4,12 +4,11 @@
 #include <iostream>
 #include <time.h>
 #include <cstdlib>
-
 using namespace std;
 
 
 // Tabuleiro para representação do jog da velha
- static char tabuleiro[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
+static char tabuleiro[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
 
 // Imprime o tabuleiro
 void printTabuleiro(){
@@ -20,11 +19,13 @@ void printTabuleiro(){
 }
 
 class Jogada{
+	friend class lista;
     public:
     int numVitorias;
     int numEmpates;
     int jog[9][2];
     int numJogadas;
+    Jogada* proximo;
     
     Jogada() {
         numVitorias = 0;
@@ -71,6 +72,146 @@ class Jogada{
 };
 
 
+
+class lista {
+    private:
+        Jogada* primeiro;
+        Jogada* ultimo;
+        int tamanho;
+    public:
+        lista();
+        ~lista();
+        void insere(Jogada dado);
+        void insere(Jogada dado, int pos);
+        void remove(int posicao);
+        int procura(Jogada valor);
+        void imprime();
+        inline bool vazia();
+};
+
+// constrói uma lista inicialmente vazia
+lista::lista() {
+    tamanho = 0;
+    primeiro = NULL;
+    ultimo = NULL;
+}
+
+lista::~lista() {
+    Jogada* iter = primeiro;
+    Jogada* proximo = NULL;
+    while (iter != NULL) {
+        proximo = iter->proximo;
+        delete iter;
+        iter = proximo;
+    }
+}
+
+// método básico que *percorre* a lista, imprimindo seus elementos
+void lista::imprime() {
+    Jogada* aux = primeiro;
+    while (aux != NULL) {
+        aux->printJogada();
+        aux = aux->proximo;
+    }
+    cout << endl;
+}
+
+// insere por padrão no final da lista
+void lista::insere(Jogada JInsere) {
+    
+    Jogada* novo = new Jogada(JInsere);
+    
+    if(novo)
+    {
+        novo -> proximo = NULL;
+        
+        if(primeiro == NULL)
+        {
+           primeiro = novo;
+           ultimo = novo;
+       }
+       else
+       {
+           ultimo -> proximo = novo;
+           ultimo = novo;
+       }
+       tamanho++;
+   }
+}
+
+// insere um dado em uma determinada posição da lista
+void lista::insere(Jogada JInsere, int posicao) {
+    
+    Jogada* novo = new Jogada(JInsere);
+    
+    if(novo)
+    {
+        if(posicao > tamanho or posicao < 0)
+        {
+            cerr << "Posicao muito grande desgraça" << endl;
+        }
+        else
+        {
+            if(primeiro == NULL)
+            {
+                insere(JInsere);
+            }
+            else
+            {
+                Jogada* ant = NULL;
+                Jogada* atual = primeiro;
+                
+                for (int i = 0; i < posicao; i++)
+                {
+                    ant = atual;
+                    atual = atual -> proximo;
+                }
+
+            ant -> proximo = novo;
+            novo -> proximo = atual;
+            }
+            tamanho++;
+        }
+    }
+}
+
+
+// procura por um elemento e retorna a posição ou -1 se não encontrado
+int lista::procura(Jogada valor) {
+    
+    Jogada* aux;
+    aux = primeiro;
+    int cont = 0;
+    
+    while(aux != NULL)
+    {
+        //if(aux -> dado == valor)
+        //{
+        //    return cont;
+        //}
+        //else
+        //{
+        //    aux = aux -> proximo;
+        //}
+        cont++;
+    }
+    
+    return -1;
+}
+
+// verifica se a lista está vazia
+inline bool lista::vazia() {
+    // Implemente aqui
+    if(primeiro == NULL)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 /*
 A estrutura de dados deve ser obrigatoriamente um vetor alocado dinamicamente iniciado com o tamanho 10 e expandido de 10 em 10 elementos
 O vetor deve conter uma estrutura denominada Jogada que deve conter as jogadas e o número de vezes que ela foi vencedora, sugiro usar um vetor para armazenar as jogadas
@@ -81,9 +222,11 @@ A estrura básica do código deverá ser alterada para possibilitar que seja sel
 
 
 
-void loadDataFile(fstream *arquivo, Jogada jog) {
+void loadDataFile(fstream *arquivo) {
+	Jogada jog;
     arquivo->seekg(0);
-    arquivo->read((char*)&jog, sizeof(Jogada)); 
+    arquivo->read((char*)&jog, sizeof(Jogada));
+    cout << "ola" << endl; 
     jog.printJogada();
 }
 
@@ -239,8 +382,22 @@ void gameLoop(string mode, fstream *arquivo, Jogada jog){
 }
 
 int main(){
-    fstream arquivo;
-    arquivo.open("jogadas.bin", ios::app | ios::binary | ios::in | ios::out);
+	ifstream arTeste;
+	arTeste.open("jogadas.bin");
+	fstream arquivo;
+	lista *listaJogadas;
+	if (arTeste.is_open())
+	{
+		arTeste.close();
+		arquivo.open("jogadas.bin", ios::app | ios::binary | ios::in | ios::out);
+		arquivo.read((char*)&listaJogadas, sizeof(lista));
+	}else{
+		arTeste.close();
+		arquivo.open("jogadas.bin", ios::app | ios::binary | ios::in | ios::out);
+		listaJogadas = new lista();
+		arquivo.write((char*) &listaJogadas, sizeof(lista));
+		
+	}
     string mode;
     cin >> mode;
    // Jogada *jogAux = new Jogada;
@@ -255,7 +412,7 @@ int main(){
         }
         cin >> mode;
     }
-    //loadDataFile(&arquivo,jog);
+    loadDataFile(&arquivo);
     
     return 0;
 }

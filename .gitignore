@@ -12,6 +12,7 @@
 *.o
 *.out
 *.obj
+*.bin
 
 # Precompiled Headers
 *.gch
