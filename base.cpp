@@ -22,14 +22,13 @@ class Jogada{
 	friend class lista;
     public:
     int numVitorias;
-    int numEmpates;
     int jog[9][2];
     int numJogadas;
     Jogada* proximo;
+    bool ehPlayer1;
     
     Jogada() {
         numVitorias = 0;
-        numEmpates = 0;
         for (int i = 0; i < 9; i++) {
             jog[i][0] = -1;
             jog[i][1] = -1;
@@ -42,25 +41,15 @@ class Jogada{
         return numVitorias;
     }
 
-    int getEmpates(){
-        return numVitorias;
-    }
 
     void setVitorias(int v){
         numVitorias = v;
-    }
-
-    void setEmpates(int e){
-        numVitorias = e;
     }
 
     void incrementaNumVitorias(){
         numVitorias++;
     }
 
-    void incrementaNumEmpates(){
-        numEmpates++;
-    }
 
     void printJogada(){
         char tabuleiroPrint[3][3] = {{' ', ' ', ' '}, {' ', ' ', ' '}, {' ', ' ', ' '}};
@@ -85,6 +74,7 @@ class lista {
         lista();
         ~lista();
         void insere(Jogada dado);
+        Jogada* buscaMelhor(Jogada *jog, string cp);
         void insere(Jogada dado, int pos);
         int procura(Jogada valor);
         void imprime();
@@ -118,6 +108,34 @@ void lista::imprime() {
     cout << endl;
 }
 
+Jogada* lista::buscaMelhor(Jogada *jog, string cp)  {
+    Jogada* aux = primeiro;
+    float maior = -1;
+    Jogada* maiorJ = NULL;
+    bool player1 = false;
+    if(cp[1] == '1') {
+        player1 = true;
+    }
+
+    while (aux != NULL) {
+        
+        bool foi = true;
+        for(int i = 0; i < jog->numJogadas && foi; i++) {
+            if (jog->jog[i][0] == aux->jog[i][0] && jog->jog[i][1] == aux->jog[i][1] && aux->ehPlayer1 == player1) {
+            }else{
+                foi = false;
+            }
+        }
+
+        if  (aux->getVitorias() > maior and foi){
+            maior = aux->getVitorias();
+            maiorJ = aux;
+        }
+        aux = aux->proximo;
+    }
+    return maiorJ;
+}
+
 // insere por padrão no final da lista
 void lista::insere(Jogada JInsere) {
     
@@ -138,80 +156,6 @@ void lista::insere(Jogada JInsere) {
        tamanho++;
    }
 }
-
-// insere um dado em uma determinada posição da lista
-void lista::insere(Jogada JInsere, int posicao) {
-    
-    Jogada* novo = new Jogada(JInsere);
-    
-    if(novo){
-        if(posicao > tamanho or posicao < 0){
-            cerr << "Posicao muito grande desgraça" << endl;
-        }
-        else{
-            if(primeiro == NULL){
-                insere(JInsere);
-            }
-            else{
-                Jogada* ant = NULL;
-                Jogada* atual = primeiro;
-                
-                for (int i = 0; i < posicao; i++)
-                {
-                    ant = atual;
-                    atual = atual -> proximo;
-                }
-
-            ant -> proximo = novo;
-            novo -> proximo = atual;
-            }
-            tamanho++;
-        }
-    }
-}
-
-
-// procura por um elemento e retorna a posição ou -1 se não encontrado
-int lista::procura(Jogada valor) {
-    
-    Jogada* aux;
-    aux = primeiro;
-    int cont = 0;
-    
-    while(aux != NULL)
-    {
-        //if(aux -> dado == valor)
-        //{
-        //    return cont;
-        //}
-        //else
-        //{
-        //    aux = aux -> proximo;
-        //}
-        cont++;
-    }
-    
-    return -1;
-}
-
-// verifica se a lista está vazia
-inline bool lista::vazia() {
-    // Implemente aqui
-    if(primeiro == NULL)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-/*
-A estrutura de dados deve ser obrigatoriamente um vetor alocado dinamicamente iniciado com o tamanho 10 e expandido de 10 em 10 elementos
-O vetor deve conter uma estrutura denominada Jogada que deve conter as jogadas e o número de vezes que ela foi vencedora, sugiro usar um vetor para armazenar as jogadas
-A estrura básica do código deverá ser alterada para possibilitar que seja selecionado um número de jogadas máxima para o modo CC
-*/
 
 void storeCase(int x, int y, Jogada jog) {
     jog.jog[jog.numJogadas][0] = x;
@@ -239,70 +183,74 @@ void userPlay(string currentPlayer, Jogada jog) {
     storeCase(x, y, jog);
 }
 
-bool lookSolution() {
-    srand(time(0)*rand());
-    int num = rand();
-    num = (num % 6)+1;
-    if (num >= 3) {
-        cout << "[Looking for Solution .. Found]\n";
-        return true;
-    }
-    cout << "[Looking for Solution .. Random]\n";
-    return false;
-}
 
 void computerPlay(string currentPlayer, Jogada *jog, lista *listaJogada, char tabuleiro[3][3]) {
-    //lookSolution();
     int x, y;
     bool deu = false;
-    while(!deu){
-        srand(time(0)*rand());
-        x = rand()%3;
-        srand(time(0)*rand());
-        y = rand()%3;
-        if (tabuleiro[x][y] == ' '){
-            deu = true;
-            jog->jog[jog->numJogadas][0] = x;
-            jog->jog[jog->numJogadas][1] = y;
-            if (currentPlayer == "C1"){
-                tabuleiro[x][y] = 'C';
-            }else{
-                tabuleiro[x][y] = 'K';
+    Jogada *seguida = NULL;
+    srand(time(0)*rand());
+    int numRand = rand()%5;
+
+    if (numRand!=0){
+        seguida = listaJogada->buscaMelhor(jog, currentPlayer);
+    }else{
+        cout << "escolheu ir por uma direção aleatoria" << endl;
+    }
+    if  (seguida == NULL){
+        cout << "\nNão achou jogada\n" << endl;
+        while(!deu){
+            srand(time(0)*rand());
+            x = rand()%3;
+            srand(time(0)*rand());
+            y = rand()%3;
+            if (tabuleiro[x][y] == ' '){
+                deu = true;
+                jog->jog[jog->numJogadas][0] = x;
+                jog->jog[jog->numJogadas][1] = y;
+                if (currentPlayer == "C1"){
+                    tabuleiro[x][y] = 'C';
+                }else{
+                    tabuleiro[x][y] = 'K';
+                }
             }
         }
-        
+    }else{
+        cout << "\nAchou jogada\n" << endl;
+        jog->jog[jog->numJogadas][0] = seguida->jog[jog->numJogadas][0];
+        jog->jog[jog->numJogadas][1] = seguida->jog[jog->numJogadas][1];
+        if (currentPlayer == "C1"){
+            tabuleiro[jog->jog[jog->numJogadas][0]][jog->jog[jog->numJogadas][1]] = 'C';
+        }else{
+            tabuleiro[jog->jog[jog->numJogadas][0]][jog->jog[jog->numJogadas][1]] = 'K';
+        }
     }
 }
 
 
-bool gameOver(int step, string currentUser, char tabuleiro[3][3]) {
+int gameOver(int step, string currentUser, char tabuleiro[3][3]) {
     //linha completa e coluna completa
     for (int i = 0; i < 3; i++){
         if ((tabuleiro[i][0] == tabuleiro[i][1]) and (tabuleiro[i][1] == tabuleiro[i][2]) and tabuleiro[i][2] != ' ') {
-            cout << "Winner is " << currentUser << endl;
-            return true;
+            return 1;
         }
         if ((tabuleiro[0][i] == tabuleiro[1][i]) and (tabuleiro[1][i] == tabuleiro[2][i]) and tabuleiro[2][i] != ' ') {
-            cout << "Winner is " << currentUser << endl;
-            return true;
+            return 1;
         }
     }
 
     //diagonal principal completa
     if((tabuleiro[0][0] == tabuleiro[1][1]) and (tabuleiro[1][1] == tabuleiro[2][2]) and tabuleiro[1][1] != ' ') {
-        cout << "Winner is " << currentUser << endl;
-        return true;
+        return 1;
     }
     //diagonal secundaria completa
     if((tabuleiro[2][0] == tabuleiro[1][1]) and (tabuleiro[1][1] == tabuleiro[0][2]) and tabuleiro[1][1] != ' ') {
-        cout << "Winner is " << currentUser << endl;
-        return true;
+        return 1;
     }
     //deu velha
     if (step >= 9) {
-        return true;
+        return 2;
     }
-    return false;
+    return 0;
 }
 
 string changeUser(string currentPlayer, string mode) {
@@ -340,9 +288,8 @@ void gameLoop(string mode, fstream *arquivo, lista *listaJogada){
         currentPlayer = "U";
     }
     currentPlayer+="1";
-    bool over = false;
-    while (!over) {
-        cout << "Passou \n";
+    int over = 0;
+    while (over == 0) {
         if (currentPlayer == "U1" or currentPlayer == "U2") {
             userPlay(currentPlayer,jog);
         }else {
@@ -354,12 +301,17 @@ void gameLoop(string mode, fstream *arquivo, lista *listaJogada){
         currentPlayer = changeUser(currentPlayer, mode);
         jog.numJogadas++;
     }
-    cout << jog.numJogadas << endl;
-    
-    cout <<"num: "<<listaJogada->tamanho*sizeof(Jogada) << endl;
+    if  (over == 1){
+        if (currentPlayer[1] == '2'){
+            jog.ehPlayer1 = true;
+            
+        }else{
+            jog.ehPlayer1 = false;
+        }
+    }
+    jog.incrementaNumVitorias();
     arquivo->write((char*) &jog, sizeof(jog));
     listaJogada->insere(jog);
-    listaJogada->imprime();
     
     cout << "Game is Over\n";
 }
@@ -380,7 +332,6 @@ int main(){
     arquivo.clear();
     arquivo.seekg(0);
     arquivo.seekp(0);
-    listaJogadas->imprime();
     string mode;
     cin >> mode;
    // Jogada *jogAux = new Jogada;
@@ -395,6 +346,6 @@ int main(){
         }
         cin >> mode;
     }
-    
+
     return 0;
 }
